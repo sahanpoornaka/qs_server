@@ -1,0 +1,9 @@
+fastapi~=0.79.0
+uvicorn[standard]~=0.18.2
+python-multipart
+pillow~=9.2.0
+deta~=1.1.0
+pytest
+requests
+pydantic~=1.9.2
+starlette~=0.19.1
