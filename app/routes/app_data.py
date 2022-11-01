@@ -2,12 +2,29 @@ from fastapi import APIRouter
 from app.conf import config
 
 # Get Application Settings
+from app.core import response_processor
+
 settings = config.get_settings()
 
 router = APIRouter(
     prefix="/app-data",
     tags=["app-data"]
 )
+
+
+@router.get("/list_all_projects")
+async def list_all_projects():
+    return response_processor.list_all_projects()
+
+
+@router.get("/list_all_levels/{project_id}")
+async def list_all_levels(project_id: str):
+    return response_processor.list_all_levels(project_id)
+
+
+@router.get("/list_all_elements/{project_id}/{floor_id}")
+async def list_all_elements(project_id: str, floor_id: str):
+    return response_processor.list_all_elements(project_id, floor_id)
 
 
 @router.get("/get")
@@ -95,4 +112,3 @@ async def get_app_data():
         }
 
     ]
-

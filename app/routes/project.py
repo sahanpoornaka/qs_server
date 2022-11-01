@@ -80,6 +80,11 @@ async def remove_element():
     }
 
 
+@router.get("/get-record")
+async def get_project(project_id: str, floor_id: str, element_id: str):
+    return request_processor.get_record_data(project_id, floor_id, element_id)
+
+
 @router.get("/get-image/{name}")
 def download_img(name: str):
     return request_processor.get_img_data(name)

@@ -20,12 +20,12 @@ from app.models.request.Project import \
 def get_project_data(project_id: str):
     db = get_base()
     res = db.get(project_id)
-    return res
+    return ProjectFull(**res)
 
 
 def get_record_data(project_id: str, floor_id: str, element_id: str):
     out_obj = {}
-    project_data: ProjectFull = ProjectFull(**get_project_data(project_id))
+    project_data: ProjectFull = get_project_data(project_id)
     if project_data:
         out_obj['project_id'] = project_id
         out_obj['project_name'] = project_data.project_name
