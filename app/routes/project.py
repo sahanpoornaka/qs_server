@@ -1,10 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, File, Form, UploadFile
+from fastapi.responses import FileResponse
+
 from app.conf import config
 
 # Get Application Settings
-from app.core import data_processor
+from app.core import request_processor
 from app.models.request.Project import Project, Floor, Element, Pin
 
 settings = config.get_settings()
@@ -17,14 +19,12 @@ router = APIRouter(
 
 @router.get("/get-project")
 async def get_project(project_id: str):
-    project_data = data_processor.get_project_data(project_id=project_id)
-    return project_data
+    return request_processor.get_project_data(project_id=project_id)
 
 
 @router.post("/add-project")
 async def add_project(project_data: Project):
-    res = data_processor.add_project_data(project_data)
-    return res
+    return request_processor.add_project_data(project_data)
 
 
 @router.put("/update-project")
@@ -43,8 +43,7 @@ async def remove_project():
 
 @router.post("/add-floor")
 async def add_floor(project_id: str, floor_data: Floor):
-    res = data_processor.add_floor_data(project_id, floor_data)
-    return res
+    return request_processor.add_floor_data(project_id, floor_data)
 
 
 @router.put("/update-floor")
@@ -62,9 +61,9 @@ async def remove_floor():
 
 
 @router.post("/add-element")
-async def add_element(project_id: str, floor_id: str, element_data: Element):
-    res = data_processor.add_element_data(project_id, floor_id, element_data)
-    return res
+def add_element(project_id: str = Form(), floor_id: str = Form(), element_name: str = Form(),
+                image_file: UploadFile = File()):
+    return request_processor.add_element_data(project_id, floor_id, element_name, image_file)
 
 
 @router.put("/update-element")
@@ -81,7 +80,23 @@ async def remove_element():
     }
 
 
+@router.get("/get-image/{name}")
+def download_img(name: str):
+    return request_processor.get_img_data(name)
+
+
 @router.put("/update-pins")
 async def update_pins(project_id: str, floor_id: str, element_id: str, pins: List[Pin]):
-    res = data_processor.update_pins(project_id, floor_id, element_id, pins)
-    return res
+    return request_processor.update_pins(project_id, floor_id, element_id, pins)
+
+
+@router.get("/get-spread-sheet")
+async def get_spread_sheet(project_id: str, floor_id: str, element_id: str):
+    return request_processor.get_spread_sheet(project_id, floor_id, element_id)
+
+
+# @router.get("/get-file")
+# def get_file():
+#     # file_path = "/home/sahan/Downloads/test_xls.xls"
+#     return request_processor.get_test_excel()
+#     # return FileResponse(path=file_path, filename="test_xls.xls", media_type='application/vnd.ms-excel')

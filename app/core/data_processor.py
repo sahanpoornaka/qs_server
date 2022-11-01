@@ -1,76 +1,41 @@
-from typing import List
+from typing import Dict
 
-from app.core.id_generator import generate_id
-from app.db.base.records import get_base
-from app.db.drive.images import get_drive
-from app.models.request.Project import \
-    Project as ProjectReq, \
-    Floor as FloorReq, \
-    Element as ElementReq, \
-    Pin as PinReq
+from openpyxl import Workbook
+
+from app.models.data.Project import Record, Pin
 
 
-def get_project_data(project_id: str):
-    db = get_base()
-    res = db.get(project_id)
-    return res
+def create_excel_sheet(record_data: Record):
+    workbook = Workbook()
+    sheet = workbook.active
+    # Header
+    sheet["A1"] = "Project Name:"
+    sheet["B1"] = record_data.project_name
+    sheet["A2"] = "Level No:"
+    sheet["B2"] = record_data.floor_id
+    sheet["A3"] = "Element Name:"
+    sheet["B3"] = record_data.element_name
 
+    # Table Headers
+    sheet["A5"] = "Ref ID"
+    sheet["B5"] = "Height"
+    sheet["C5"] = "Width"
+    sheet["D5"] = "Breadth"
+    sheet["E5"] = "Volume"
+    sheet["F5"] = "Times"
+    sheet["G5"] = "Total"
+    sheet["H5"] = "Remarks"
 
-def add_project_data(project_data: ProjectReq):
-    db = get_base()
-    project_data_db = db.put({
-        **project_data.dict()
-    })
-    return project_data_db
+    # Add Pin Data
+    pins: Dict[str, Pin] = record_data.pins
+    for idx, (ref_id, pin) in enumerate(pins.items()):
+        sheet[f"A{idx + 6}"] = ref_id
+        sheet[f"B{idx + 6}"] = pin.height
+        sheet[f"C{idx + 6}"] = pin.width
+        sheet[f"D{idx + 6}"] = pin.breadth
+        sheet[f"E{idx + 6}"] = pin.height * pin.width * pin.breadth
+        sheet[f"F{idx + 6}"] = pin.times
+        sheet[f"G{idx + 6}"] = pin.height * pin.width * pin.breadth * pin.times
+        sheet[f"H{idx + 6}"] = pin.remarks
 
-
-def add_floor_data(project_id: str, floor_data: FloorReq):
-    db = get_base()
-    project_data = db.get(project_id)
-    floor_id: str = generate_id("floor", floor_data.floor_no)
-    if project_data:
-        updated_data = \
-            db.update(key=project_id, updates={
-                f"floors.{floor_id}": floor_data.dict()
-            })
-        return updated_data
-    else:
-        return {}, 404
-
-
-def add_element_data(project_id: str, floor_id: str, element_data: ElementReq):
-    db = get_base()
-    project_data = db.get(project_id)
-    element_id: str = generate_id("element")
-
-    if project_data:
-        if floor_id in project_data['floors']:
-            updated_data = \
-                db.update(key=project_id, updates={
-                    f"floors.{floor_id}.elements.{element_id}": element_data.dict()
-                })
-            return updated_data
-        else:
-            return {}, 404
-    else:
-        return {}, 404
-
-
-def update_pins(project_id: str, floor_id: str, element_id: str, pins: List[PinReq]):
-    db = get_base()
-    project_data = db.get(project_id)
-
-    if project_data:
-        if floor_id in project_data['floors']:
-            if element_id in project_data['floors'][floor_id]['elements']:
-                for pin in pins:
-                    db.update(key=project_id, updates={
-                        f"floors.{floor_id}.elements.{element_id}.pins.{pin.ref_id}": pin.dict()
-                    })
-                return {}, 200
-            else:
-                return {}, 404
-        else:
-            return {}, 404
-    else:
-        return {}, 404
+    return workbook
