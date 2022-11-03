@@ -20,11 +20,22 @@ from app.models.request.Project import \
 def get_project_data(project_id: str):
     db = get_base()
     res = db.get(project_id)
-    return ProjectFull(**res)
+    if res:
+        return ProjectFull(**res)
+    else:
+        return ProjectFull(project_name="Undefined Project")
 
 
 def get_record_data(project_id: str, floor_id: str, element_id: str):
-    out_obj = {}
+    out_obj = {
+        'project_id': "",
+        'project_name': "",
+        'floor_id': "",
+        'floor_no': 0,
+        'element_id': "",
+        'element_name': "",
+        'img_name': "",
+    }
     project_data: ProjectFull = get_project_data(project_id)
     if project_data:
         out_obj['project_id'] = project_id
@@ -91,8 +102,14 @@ def add_element_data(project_id: str, floor_id: str, element_id: str, image_file
 def get_img_data(name: str):
     drive = get_drive()
     res = drive.get(name)
-    print(type(res))
+    if not res:
+        res = drive.get("not_found.png")
     return StreamingResponse(res.iter_chunks(1024), media_type="image/png")
+
+
+def upload_img(image_name: str, image_file: UploadFile):
+    image_data = upload_image(image_name, image_file)
+    return image_data
 
 
 def update_pins(project_id: str, floor_id: str, element_id: str, pins: List[PinReq]):

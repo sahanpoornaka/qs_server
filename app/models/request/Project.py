@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union
 from pydantic import BaseModel
 
 
@@ -21,7 +21,7 @@ class Pin(BaseModel):
     times: int
     x_coord: float
     y_coord: float
-    remarks: str
+    remarks: Union[str, None]
 
 
 class Element(BaseModel):

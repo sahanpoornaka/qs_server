@@ -90,6 +90,11 @@ def download_img(name: str):
     return request_processor.get_img_data(name)
 
 
+@router.post("/upload-image")
+def upload_img(image_name: str = Form(), image_file: UploadFile = File()):
+    return request_processor.upload_img(image_name, image_file)
+
+
 @router.put("/update-pins")
 async def update_pins(project_id: str, floor_id: str, element_id: str, pins: List[Pin]):
     return request_processor.update_pins(project_id, floor_id, element_id, pins)
@@ -100,8 +105,4 @@ async def get_spread_sheet(project_id: str, floor_id: str, element_id: str):
     return request_processor.get_spread_sheet(project_id, floor_id, element_id)
 
 
-# @router.get("/get-file")
-# def get_file():
-#     # file_path = "/home/sahan/Downloads/test_xls.xls"
-#     return request_processor.get_test_excel()
-#     # return FileResponse(path=file_path, filename="test_xls.xls", media_type='application/vnd.ms-excel')
+
