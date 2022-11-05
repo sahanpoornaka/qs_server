@@ -1,6 +1,7 @@
 from app.core.request_processor import get_project_data
+from app.data import constants
 from app.db.base.records import get_base
-from app.models.data.Project import ProjectFull, Floor
+from app.models.data.Project import ProjectFull, Floor, Element
 
 
 def list_all_projects():
@@ -39,3 +40,11 @@ def list_all_elements(project_id: str, floor_id: str):
                     elements = elements + [{"element_id": element_id, "element_name": element.element_name}]
                 out_obj['elements'] = elements
     return out_obj
+
+
+def list_all_add_elements():
+    out_list = []
+    elements_data: dict = constants.ELEMENTS
+    for elem in elements_data.values():
+        out_list = out_list + [{"element_id": elem.element_id, "element_name": elem.element_name}]
+    return out_list

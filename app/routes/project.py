@@ -61,9 +61,9 @@ async def remove_floor():
 
 
 @router.post("/add-element")
-def add_element(project_id: str = Form(), floor_id: str = Form(), element_name: str = Form(),
-                image_file: UploadFile = File()):
-    return request_processor.add_element_data(project_id, floor_id, element_name, image_file)
+def add_element(project_id: str = Form(), floor_id: str = Form(), element_id: str = Form(),
+                image_file: UploadFile = File(...)):
+    return request_processor.add_element_data(project_id, floor_id, element_id, image_file)
 
 
 @router.put("/update-element")

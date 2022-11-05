@@ -1,12 +1,13 @@
 from io import BytesIO
 from typing import List
 
-from fastapi import UploadFile
+from fastapi import UploadFile, Form, File
 from fastapi.responses import StreamingResponse
 
 from app.core import data_processor
 from app.core.id_generator import generate_id
 from app.core.image_processor import upload_image
+from app.core.utils import remove_none
 from app.db.base.records import get_base
 from app.db.drive.images import get_drive
 from app.data.constants import ELEMENTS
@@ -21,6 +22,14 @@ def get_project_data(project_id: str):
     db = get_base()
     res = db.get(project_id)
     if res:
+        # Fill Empty Pins with {}
+        # for floor_id, floor_data in res['floors'].items():
+        #     if floor_data['elements']:
+        #         for element_id, element_data in floor_data['elements'].items():
+        #             if not element_data['pins']:
+        #                 res['floors'][floor_id]['elements'][element_id]['pins'] = {}
+
+        res = remove_none(res)
         return ProjectFull(**res)
     else:
         return ProjectFull(project_name="Undefined Project")
@@ -88,10 +97,19 @@ def add_element_data(project_id: str, floor_id: str, element_id: str, image_file
             # Upload Image
             image_name = project_id + "_" + floor_id + "_" + element_id + ".png"
             image_data = upload_image(image_name, image_file)
-            updated_data = \
-                db.update(key=project_id, updates={
-                    f"floors.{floor_id}.elements.{element_id}": {**element_data.dict(), "img_data": image_data}
-                })
+
+            # Check if this First Element
+            if project_data['floors'][floor_id]['elements']:
+                updated_data = \
+                    db.update(key=project_id, updates={
+                        f"floors.{floor_id}.elements.{element_id}": {**element_data.dict(), "img_data": image_data}
+                    })
+            else:
+                updated_data = \
+                    db.update(key=project_id, updates={
+                        f"floors.{floor_id}.elements": {
+                            f"{element_id}": {**element_data.dict(), "img_data": image_data}}
+                    })
             return updated_data
         else:
             return {}, 404
@@ -142,8 +160,8 @@ def get_spread_sheet(project_id: str, floor_id: str, element_id: str):
     workbook.save(file_stream)
     file_stream.seek(0)
 
-    return StreamingResponse(file_stream, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
+    return StreamingResponse(file_stream,
+                             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 # def get_test_excel():
 #     wb = Workbook()

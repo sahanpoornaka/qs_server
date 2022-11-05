@@ -3,6 +3,7 @@ from app.conf import config
 
 # Get Application Settings
 from app.core import response_processor
+from app.data import constants
 
 settings = config.get_settings()
 
@@ -25,6 +26,12 @@ async def list_all_levels(project_id: str):
 @router.get("/list_all_elements/{project_id}/{floor_id}")
 async def list_all_elements(project_id: str, floor_id: str):
     return response_processor.list_all_elements(project_id, floor_id)
+
+
+@router.get("/list_all_add_elements")
+async def list_all_add_elements():
+    return response_processor.list_all_add_elements()
+    # return constants.ELEMENTS
 
 
 @router.get("/get")
